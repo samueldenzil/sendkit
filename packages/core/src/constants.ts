@@ -1,0 +1,1 @@
+export const MAX_TELEGRAM_MESSAGE_LENGTH = 4096;

@@ -7,8 +7,8 @@ export function redactToken(content: string, token?: string): string {
 }
 
 /**
- * Extracts a descriptive, human-readable error message from an unknown error,
- * including nested error causes, and redacts the provided secret token if present.
+ * Extracts a clean, human-readable error message from an unknown error.
+ * Supports ZodError issues, nested error causes, and optional token redaction.
  */
 export function getErrorMessage(
   error: unknown,
@@ -16,7 +16,16 @@ export function getErrorMessage(
 ): string {
   let message: string;
 
-  if (error instanceof Error) {
+  if (
+    error &&
+    typeof error === "object" &&
+    "issues" in error &&
+    Array.isArray((error as { issues: Array<{ message: string }> }).issues)
+  ) {
+    message = (error as { issues: Array<{ message: string }> }).issues
+      .map((issue) => issue.message)
+      .join("; ");
+  } else if (error instanceof Error) {
     if (error.cause instanceof Error) {
       message = `${error.message} (${error.cause.message})`;
     } else if (error.cause) {
@@ -32,3 +41,4 @@ export function getErrorMessage(
 
   return tokenToRedact ? redactToken(message, tokenToRedact) : message;
 }
+
