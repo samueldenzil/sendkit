@@ -2,7 +2,13 @@ import { z } from "zod";
 import { MAX_TELEGRAM_MESSAGE_LENGTH } from "./constants";
 
 export const telegramMessageInputSchema = z.object({
-  chatId: z.string().trim().min(1, "Telegram chat ID cannot be empty."),
+  chatId: z
+    .string()
+    .trim()
+    .min(1, "Telegram chat ID cannot be empty.")
+    .describe(
+      "Telegram chat ID (numeric user/group ID, or @channelusername)",
+    ),
   message: z
     .string()
     .trim()
@@ -10,7 +16,8 @@ export const telegramMessageInputSchema = z.object({
     .max(
       MAX_TELEGRAM_MESSAGE_LENGTH,
       `Message exceeds Telegram limit of ${MAX_TELEGRAM_MESSAGE_LENGTH} characters.`,
-    ),
+    )
+    .describe("The text message content to send"),
 });
 
 export const telegramMessageOptionsSchema = telegramMessageInputSchema.extend({

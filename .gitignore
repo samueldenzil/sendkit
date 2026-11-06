@@ -5,3 +5,9 @@ dist/
 !.env.example
 .DS_Store
 *.log
+
+# MCP client configs containing credentials
+.cursor/mcp.json
+.mcp.json
+opencode.json
+.agents/plugins/**/mcp_config.json
