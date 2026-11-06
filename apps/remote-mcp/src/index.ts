@@ -1,8 +1,10 @@
+import { createClerkClient } from "@clerk/express";
+import { generateClerkProtectedResourceMetadata } from "@clerk/mcp-tools/server";
 import {
   McpServer,
   WebStandardStreamableHTTPServerTransport,
 } from "@modelcontextprotocol/server";
-import { Hono, type Context } from "hono";
+import { Context, Hono } from "hono";
 import { cors } from "hono/cors";
 import process from "node:process";
 import {
@@ -10,6 +12,22 @@ import {
   sendTelegramMessage,
   telegramMessageInputSchema,
 } from "sendkit-core";
+
+const clerkPublishableKey = process.env.CLERK_PUBLISHABLE_KEY;
+const clerkSecretKey = process.env.CLERK_SECRET_KEY;
+
+if (!clerkPublishableKey) {
+  throw new Error("CLERK_PUBLISHABLE_KEY environment variable is required");
+}
+
+if (!clerkSecretKey) {
+  throw new Error("CLERK_SECRET_KEY environment variable is required");
+}
+
+const clerkClient = createClerkClient({
+  publishableKey: clerkPublishableKey,
+  secretKey: clerkSecretKey,
+});
 
 function createServer(botToken: string) {
   const server = new McpServer({
@@ -57,16 +75,55 @@ function createServer(botToken: string) {
   return server;
 }
 
-function extractBotToken(c: Context): string | undefined {
-  const authHeader = c.req.header("Authorization");
-  if (authHeader?.startsWith("Bearer ")) {
-    const token = authHeader.slice(7).trim();
-    if (token) return token;
-  }
+const app = new Hono();
 
-  const customHeader = c.req.header("X-Telegram-Bot-Token");
-  if (customHeader?.trim()) {
-    return customHeader.trim();
+app.use("*", cors());
+
+function protectedResourceMetadataUrl(c: Context, botToken?: string) {
+  const path = botToken ? `/${botToken}/mcp` : "/mcp";
+  return new URL(
+    `/.well-known/oauth-protected-resource${path}`,
+    c.req.url,
+  ).toString();
+}
+
+function unauthorizedMcpResponse(c: Context, botToken?: string) {
+  c.header(
+    "WWW-Authenticate",
+    `Bearer resource_metadata="${protectedResourceMetadataUrl(c, botToken)}"`,
+  );
+
+  return c.json({ error: "Unauthorized" }, 401);
+}
+
+// Clerk OAuth Protected Resource Metadata (RFC 9728)
+app.get("/.well-known/oauth-protected-resource/mcp", (c) => {
+  const resourceUrl = new URL("/mcp", c.req.url).toString();
+
+  return c.json(
+    generateClerkProtectedResourceMetadata({
+      publishableKey: clerkPublishableKey,
+      resourceUrl,
+    }),
+  );
+});
+
+app.get("/.well-known/oauth-protected-resource/:botToken/mcp", (c) => {
+  const botToken = c.req.param("botToken");
+  const resourceUrl = new URL(`/${botToken}/mcp`, c.req.url).toString();
+
+  return c.json(
+    generateClerkProtectedResourceMetadata({
+      publishableKey: clerkPublishableKey,
+      resourceUrl,
+    }),
+  );
+});
+
+function extractBotToken(c: Context): string | undefined {
+  const headerToken = c.req.header("X-Telegram-Bot-Token");
+  if (headerToken?.trim()) {
+    return headerToken.trim();
   }
 
   const paramToken = c.req.param("botToken");
@@ -74,12 +131,13 @@ function extractBotToken(c: Context): string | undefined {
     return paramToken.trim();
   }
 
+  const envToken = process.env.TELEGRAM_BOT_TOKEN;
+  if (envToken?.trim()) {
+    return envToken.trim();
+  }
+
   return undefined;
 }
-
-const app = new Hono();
-
-app.use("*", cors());
 
 async function handleMcpRequest(c: Context) {
   const botToken = extractBotToken(c);
@@ -87,12 +145,30 @@ async function handleMcpRequest(c: Context) {
   if (!botToken) {
     return c.json(
       {
-        error: "Unauthorized",
+        error: "Bad Request",
         message:
-          "Telegram bot token is required. Provide it via 'Authorization: Bearer <token>', 'X-Telegram-Bot-Token' header.",
+          "Telegram bot token is required. Provide it via 'X-Telegram-Bot-Token' header, '/:botToken/mcp' path parameter, or configure TELEGRAM_BOT_TOKEN on the server.",
       },
-      401,
+      400,
     );
+  }
+
+  const authHeader = c.req.header("Authorization");
+  if (!authHeader) {
+    return unauthorizedMcpResponse(c, botToken);
+  }
+
+  try {
+    const requestState = await clerkClient.authenticateRequest(c.req.raw, {
+      acceptsToken: "oauth_token",
+    });
+
+    if (!requestState.isAuthenticated) {
+      return unauthorizedMcpResponse(c, botToken);
+    }
+  } catch (error) {
+    console.error("Clerk authentication error:", error);
+    return unauthorizedMcpResponse(c, botToken);
   }
 
   const server = createServer(botToken);
@@ -119,6 +195,7 @@ async function handleMcpRequest(c: Context) {
 }
 
 app.all("/mcp", handleMcpRequest);
+app.all("/:botToken/mcp", handleMcpRequest);
 
 app.notFound((c) => c.json({ error: "Not found" }, 404));
 
@@ -126,5 +203,21 @@ const port = Number(process.env.PORT ?? 3000);
 
 export default {
   port,
-  fetch: app.fetch,
+  fetch: (req: Request) => {
+    const url = new URL(req.url);
+
+    const protoHeader = req.headers.get("x-forwarded-proto");
+    if (protoHeader) {
+      const proto = protoHeader.split(",")[0].trim();
+      url.protocol = proto.endsWith(":") ? proto : `${proto}:`;
+    }
+
+    const hostHeader = req.headers.get("x-forwarded-host");
+    if (hostHeader) {
+      const host = hostHeader.split(",")[0].trim();
+      url.host = host;
+    }
+
+    return app.fetch(new Request(url, req));
+  },
 };
