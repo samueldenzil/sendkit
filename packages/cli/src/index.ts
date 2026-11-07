@@ -52,9 +52,10 @@ function getTelegramBotToken() {
   try {
     const raw = readFileSync(configPath, "utf-8");
     parsed = JSON.parse(raw);
-  } catch {
+  } catch (error) {
     throw new Error(
       `SendKit configuration file at ${configPath} is corrupted or contains invalid JSON. Run \`sendkit init --telegram-bot-token <token>\` to reconfigure your credentials.`,
+      { cause: error },
     );
   }
 
@@ -70,7 +71,9 @@ function getTelegramBotToken() {
 
 program
   .name("sendkit")
-  .description("SendKit CLI - Developer toolkit for sending messages across communication channels.");
+  .description(
+    "SendKit CLI - Developer toolkit for sending messages across communication channels.",
+  );
 
 program
   .command("init")
@@ -91,10 +94,7 @@ program
     "<chatId>",
     "Destination Telegram chat ID (numeric user ID, group ID, or public @channelusername)",
   )
-  .argument(
-    "<message>",
-    "Message text to deliver (supports up to 4,096 characters)",
-  )
+  .argument("<message>", "Message text to deliver (supports up to 4,096 characters)")
   .action(async (chatId: string, message: string) => {
     const result = await sendTelegramMessage({
       botToken: getTelegramBotToken(),

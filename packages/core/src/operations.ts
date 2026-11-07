@@ -18,28 +18,27 @@ export async function sendTelegramMessage(
 
   let response: Response;
   try {
-    response = await fetch(
-      `https://api.telegram.org/bot${parsedInput.botToken}/sendMessage`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
+    response = await fetch(`https://api.telegram.org/bot${parsedInput.botToken}/sendMessage`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify(requestBody),
+    });
   } catch (error) {
     throw new Error(
       `Network request failed: ${getErrorMessage(error, parsedInput.botToken)}. Please verify your internet connection.`,
+      { cause: error },
     );
   }
 
   let rawData: unknown;
   try {
     rawData = await response.json();
-  } catch {
+  } catch (error) {
     throw new Error(
       `Telegram API returned an unexpected response (HTTP ${response.status} ${response.statusText}). Please try again later.`,
+      { cause: error },
     );
   }
 

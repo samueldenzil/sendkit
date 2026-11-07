@@ -24,7 +24,10 @@ export const telegramMessageOptionsSchema = telegramMessageInputSchema.extend({
   botToken: z
     .string()
     .trim()
-    .min(1, "Telegram Bot token is required. Please provide a valid token obtained from @BotFather."),
+    .min(
+      1,
+      "Telegram Bot token is required. Please provide a valid token obtained from @BotFather.",
+    ),
 });
 
 export const telegramMessageRequestSchema = z.object({
@@ -45,7 +48,5 @@ export const telegramMessageOutputSchema = z.object({
 });
 
 export type TelegramMessageInput = z.infer<typeof telegramMessageInputSchema>;
-export type TelegramMessageOptions = z.infer<
-  typeof telegramMessageOptionsSchema
->;
+export type TelegramMessageOptions = z.infer<typeof telegramMessageOptionsSchema>;
 export type TelegramMessageOutput = z.infer<typeof telegramMessageOutputSchema>;

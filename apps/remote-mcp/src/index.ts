@@ -1,17 +1,10 @@
 import { createClerkClient } from "@clerk/express";
 import { generateClerkProtectedResourceMetadata } from "@clerk/mcp-tools/server";
-import {
-  McpServer,
-  WebStandardStreamableHTTPServerTransport,
-} from "@modelcontextprotocol/server";
+import { McpServer, WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/server";
 import { Context, Hono } from "hono";
 import { cors } from "hono/cors";
 import process from "node:process";
-import {
-  getErrorMessage,
-  sendTelegramMessage,
-  telegramMessageInputSchema,
-} from "sendkit-core";
+import { getErrorMessage, sendTelegramMessage, telegramMessageInputSchema } from "sendkit-core";
 
 const clerkPublishableKey = process.env.CLERK_PUBLISHABLE_KEY;
 const clerkSecretKey = process.env.CLERK_SECRET_KEY;
@@ -82,10 +75,7 @@ app.use("*", cors());
 
 function protectedResourceMetadataUrl(c: Context, botToken?: string) {
   const path = botToken ? `/${botToken}/mcp` : "/mcp";
-  return new URL(
-    `/.well-known/oauth-protected-resource${path}`,
-    c.req.url,
-  ).toString();
+  return new URL(`/.well-known/oauth-protected-resource${path}`, c.req.url).toString();
 }
 
 function unauthorizedMcpResponse(c: Context, botToken?: string) {

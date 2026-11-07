@@ -1,11 +1,7 @@
 import process from "node:process";
 import { McpServer } from "@modelcontextprotocol/server";
 import { StdioServerTransport } from "@modelcontextprotocol/server/stdio";
-import {
-  getErrorMessage,
-  sendTelegramMessage,
-  telegramMessageInputSchema,
-} from "sendkit-core";
+import { getErrorMessage, sendTelegramMessage, telegramMessageInputSchema } from "sendkit-core";
 
 const server = new McpServer({
   name: "sendkit-mcp",
@@ -28,8 +24,7 @@ server.registerTool(
   "send_telegram_message",
   {
     title: "Send Telegram Message",
-    description:
-      "Send a message to a Telegram chat, group, or channel using the Telegram Bot API.",
+    description: "Send a message to a Telegram chat, group, or channel using the Telegram Bot API.",
     inputSchema: telegramMessageInputSchema,
   },
   async (input) => {
