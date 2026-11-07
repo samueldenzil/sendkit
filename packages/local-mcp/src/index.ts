@@ -17,7 +17,7 @@ function getTelegramBotToken() {
 
   if (!token) {
     throw new Error(
-      "TELEGRAM_BOT_TOKEN is required. Configure it in your MCP client environment.",
+      "TELEGRAM_BOT_TOKEN environment variable is required. Please set it in your MCP client configuration.",
     );
   }
 
@@ -27,8 +27,9 @@ function getTelegramBotToken() {
 server.registerTool(
   "send_telegram_message",
   {
-    title: "Telegram",
-    description: "Send a Telegram message to a specified chat.",
+    title: "Send Telegram Message",
+    description:
+      "Send a message to a Telegram chat, group, or channel using the Telegram Bot API.",
     inputSchema: telegramMessageInputSchema,
   },
   async (input) => {

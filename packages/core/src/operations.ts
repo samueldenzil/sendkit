@@ -30,7 +30,7 @@ export async function sendTelegramMessage(
     );
   } catch (error) {
     throw new Error(
-      `Network failure: ${getErrorMessage(error, parsedInput.botToken)}`,
+      `Network request failed: ${getErrorMessage(error, parsedInput.botToken)}. Please verify your internet connection.`,
     );
   }
 
@@ -39,7 +39,7 @@ export async function sendTelegramMessage(
     rawData = await response.json();
   } catch {
     throw new Error(
-      `Telegram server error (HTTP ${response.status} ${response.statusText}).`,
+      `Telegram API returned an unexpected response (HTTP ${response.status} ${response.statusText}). Please try again later.`,
     );
   }
 
@@ -47,7 +47,7 @@ export async function sendTelegramMessage(
 
   if (!response.ok || !data.ok || !data.result) {
     const detail = data.description ?? "Telegram message request failed";
-    throw new Error(redactToken(detail, parsedInput.botToken));
+    throw new Error(`Telegram API error: ${redactToken(detail, parsedInput.botToken)}`);
   }
 
   return {

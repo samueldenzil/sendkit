@@ -38,8 +38,9 @@ function createServer(botToken: string) {
   server.registerTool(
     "send_telegram_message",
     {
-      title: "Telegram",
-      description: "Send a Telegram message to a specified chat.",
+      title: "Send Telegram Message",
+      description:
+        "Send a message to a Telegram chat, group, or channel using the Telegram Bot API.",
       inputSchema: telegramMessageInputSchema,
     },
     async (input) => {

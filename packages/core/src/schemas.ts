@@ -5,23 +5,26 @@ export const telegramMessageInputSchema = z.object({
   chatId: z
     .string()
     .trim()
-    .min(1, "Telegram chat ID cannot be empty.")
+    .min(1, "Telegram chat ID cannot be empty. Please provide a numeric ID or @channelusername.")
     .describe(
-      "Telegram chat ID (numeric user/group ID, or @channelusername)",
+      "Destination Telegram chat ID (numeric user ID, group ID, or public @channelusername)",
     ),
   message: z
     .string()
     .trim()
-    .min(1, "Telegram message cannot be empty.")
+    .min(1, "Telegram message text cannot be empty. Please provide content to send.")
     .max(
       MAX_TELEGRAM_MESSAGE_LENGTH,
-      `Message exceeds Telegram limit of ${MAX_TELEGRAM_MESSAGE_LENGTH} characters.`,
+      `Message exceeds Telegram's limit of ${MAX_TELEGRAM_MESSAGE_LENGTH} characters. Please shorten your message.`,
     )
-    .describe("The text message content to send"),
+    .describe("Message text to deliver (supports up to 4,096 characters)"),
 });
 
 export const telegramMessageOptionsSchema = telegramMessageInputSchema.extend({
-  botToken: z.string().trim().min(1, "Telegram bot token is required."),
+  botToken: z
+    .string()
+    .trim()
+    .min(1, "Telegram Bot token is required. Please provide a valid token obtained from @BotFather."),
 });
 
 export const telegramMessageRequestSchema = z.object({
