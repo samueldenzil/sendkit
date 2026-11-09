@@ -7,6 +7,7 @@
     ".": "./src/index.ts"
   },
   "scripts": {
+    "build": "echo 'No build step required for Bun'",
     "dev": "bun run src/index.ts",
     "start": "bun run src/index.ts"
   },
