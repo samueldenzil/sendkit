@@ -1,7 +1,12 @@
-import process from "node:process";
+#!/usr/bin/env node
 import { McpServer } from "@modelcontextprotocol/server";
 import { StdioServerTransport } from "@modelcontextprotocol/server/stdio";
-import { getErrorMessage, sendTelegramMessage, telegramMessageInputSchema } from "sendkit-core";
+import {
+  getErrorMessage,
+  sendTelegramMessage,
+  telegramMessageInputSchema,
+} from "@samueldenzil-org/sendkit-core";
+import process from "node:process";
 
 const server = new McpServer({
   name: "sendkit-mcp",

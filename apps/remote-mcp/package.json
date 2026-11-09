@@ -14,7 +14,7 @@
     "@clerk/express": "^2.1.88",
     "@clerk/mcp-tools": "^0.8.0",
     "@modelcontextprotocol/server": "^2.4.0",
-    "hono": "^4.13.16",
-    "sendkit-core": "workspace:*"
+    "@samueldenzil-org/sendkit-core": "workspace:*",
+    "hono": "^4.13.16"
   }
 }

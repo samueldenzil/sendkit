@@ -1,9 +1,10 @@
+#!/usr/bin/env node
+import { getErrorMessage, sendTelegramMessage } from "@samueldenzil-org/sendkit-core";
 import { Command } from "commander";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import process from "node:process";
-import { getErrorMessage, sendTelegramMessage } from "sendkit-core";
 import { z } from "zod";
 
 const program = new Command();

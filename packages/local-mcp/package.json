@@ -1,17 +1,35 @@
 {
-  "name": "sendkit-mcp",
-  "version": "0.0.0",
-  "private": true,
+  "name": "@samueldenzil-org/sendkit-mcp",
+  "version": "0.0.1",
+  "bin": {
+    "sendkit-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
   "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
+    "build": "tsdown",
+    "pack:dry": "bun run build && bun pm pack --dry-run",
+    "prepublishOnly": "bun run build",
     "dev": "bun run src/index.ts",
-    "start": "bun run src/index.ts"
+    "start": "node dist/index.js"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.4.0",
-    "sendkit-core": "workspace:*"
+    "@samueldenzil-org/sendkit-core": "workspace:*"
   }
 }

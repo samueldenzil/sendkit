@@ -1,10 +1,14 @@
 import { createClerkClient } from "@clerk/express";
 import { generateClerkProtectedResourceMetadata } from "@clerk/mcp-tools/server";
 import { McpServer, WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/server";
+import {
+  getErrorMessage,
+  sendTelegramMessage,
+  telegramMessageInputSchema,
+} from "@samueldenzil-org/sendkit-core";
 import { Context, Hono } from "hono";
 import { cors } from "hono/cors";
 import process from "node:process";
-import { getErrorMessage, sendTelegramMessage, telegramMessageInputSchema } from "sendkit-core";
 
 const clerkPublishableKey = process.env.CLERK_PUBLISHABLE_KEY;
 const clerkSecretKey = process.env.CLERK_SECRET_KEY;
